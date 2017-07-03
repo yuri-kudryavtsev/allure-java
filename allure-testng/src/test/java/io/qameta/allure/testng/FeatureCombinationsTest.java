@@ -9,12 +9,13 @@ import io.qameta.allure.model.ExecutableItem;
 import io.qameta.allure.model.FixtureResult;
 import io.qameta.allure.model.Label;
 import io.qameta.allure.model.Link;
+import io.qameta.allure.model.Parameter;
 import io.qameta.allure.model.Stage;
 import io.qameta.allure.model.Status;
 import io.qameta.allure.model.StepResult;
 import io.qameta.allure.model.TestResult;
 import io.qameta.allure.model.TestResultContainer;
-import io.qameta.allure.testdata.AllureResultsWriterStub;
+import io.qameta.allure.test.AllureResultsWriterStub;
 import org.assertj.core.api.Condition;
 import org.assertj.core.groups.Tuple;
 import org.testng.ITestNGListener;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * @author Egor Borisov ehborisov@gmail.com
@@ -309,6 +311,22 @@ public class FeatureCombinationsTest {
         final List<String> secondSuite = singletonList(uids.get(2));
         assertContainersChildren(secondTagName, testContainers, secondSuite);
         assertContainersChildren(secondSuiteName, testContainers, getUidsByName(testContainers, secondTagName));
+    }
+
+    @Test(description = "Before Suite Parameter")
+    public void testBeforeSuiteParameter() {
+        runTestNgSuites("suites/parameterized-suite1.xml", "suites/parameterized-suite2.xml");
+        List<TestResult> testResults = results.getTestResults();
+        assertThat(testResults)
+                .hasSize(2)
+                .flatExtracting(TestResult::getParameters)
+                .extracting(Parameter::getName, Parameter::getValue)
+                .containsExactly(
+                        tuple("param", "first"),
+                        tuple("parameter", "first"),
+                        tuple("param", "second"),
+                        tuple("parameter", "second")
+                );
     }
 
     @Test(description = "Parallel methods")
